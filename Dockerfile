@@ -23,4 +23,4 @@ EXPOSE 8080
 # Optional JVM flags can be overridden at run time
 ENV JAVA_OPTS=""
 
-ENTRYPOINT ["sh","-c","java -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-pg} $JAVA_OPTS -jar /app/app.jar"]
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
