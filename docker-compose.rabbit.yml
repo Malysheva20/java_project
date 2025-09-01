@@ -1,0 +1,40 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppass
+    ports:
+      - "5432:5432"
+
+  rabbit:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_started
+      rabbit:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: "pg,amqp"
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: appdb
+      DB_USER: appuser
+      DB_PASSWORD: apppass
+      RABBIT_HOST: rabbit
+      RABBIT_PORT: 5672
+      RABBIT_USER: guest
+      RABBIT_PASS: guest
+    ports:
+      - "8080:8080"
