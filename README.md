@@ -1,4 +1,4 @@
-# Step 1: Basic REST API with In-Memory Storage
+# (step1) Step 1: Basic REST API with In-Memory Storage
 
 ## Описание
 В этом шаге реализован простой REST API на Spring Boot с in-memory хранилищем для задач, пользователей и уведомлений.  
