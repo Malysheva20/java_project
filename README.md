@@ -1,85 +1,37 @@
-# Step 6: Caching with Redis (profile `redis`)
+# Step 7: Messaging with RabbitMQ (profile `amqp`)
 
-## Что добавляем
-- Spring Cache + Redis для кэширования выборок задач.
-- Профиль `redis` включает `@EnableCaching` и настраивает TTL через `RedisCacheManager`.
+## Цель
+- Поднять брокер сообщений **RabbitMQ**.
+- Публиковать событие при **создании задачи**.
+- **Notification service** получает обновления **ТОЛЬКО** из брокера и сохраняет уведомления.
+- Обработчик слушает очередь и асинхронно обрабатывает сообщения.
 
-## Файлы в этом шаге
-- `pom.xml` — добавлены зависимости `spring-boot-starter-data-redis` и `spring-boot-starter-cache`.
-- `src/main/resources/application-redis.properties` — настройки подключения к Redis.
-- `src/main/java/com/example/demo/config/RedisConfig.java` — `@EnableCaching`, TTL по кэшеям.
+## Что добавлено
+- Зависимости: `spring-boot-starter-amqp`, `spring-boot-starter-aop` (аспект публикации).
+- Профиль `amqp`: `application-amqp.properties`.
+- `RabbitConfig` (`exchange`, `queue`, `binding`, `RabbitTemplate` c JSON-конвертером).
+- `TaskCreatePublishAspect`: перехватывает `TaskServiceApi.create(..)` и публикует `TaskCreatedEvent`.
+- `NotificationEventListener`: `@RabbitListener` обрабатывает событие и сохраняет `NotificationEntity`.
+- `docker-compose.rabbit.yml`: `db` + `rabbit` + `app` (профили `pg,amqp`).
 
-## Как это работает
-1. Аннотируй методы сервисов задач (в `TaskServicePg`/`TaskServiceH2`):
-   - `@Cacheable(cacheNames="task:get", key="#id")` — `get(Long id)`
-   - `@Cacheable(cacheNames="task:all", key="#userId")` — `getAll(Long userId)`
-   - `@Cacheable(cacheNames="task:pending", key="#userId")` — `getPending(Long userId)`
-   - `@CacheEvict(cacheNames={"task:all","task:pending"}, key="#t.userId")` — в `create(Task t)`
-   - `@CacheEvict(cacheNames={"task:get"}, key="#id")` + (опционально) инвалидация списков по пользователю — в `delete(Long id)`
-2. Кэш активируется только при профиле `redis`. В остальных профилях аннотации не работают (нет `@EnableCaching`).
-
-## TTL (настраивается в `RedisConfig`)
-- `task:get` — 10 минут
-- `task:all`, `task:pending` — 2 минуты
-- По умолчанию — 5 минут
-
-## Docker Compose (app + db + redis)
-Создай `docker-compose.redis.yml` рядом с `pom.xml`:
-```yaml
-version: "3.9"
-services:
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: appdb
-      POSTGRES_USER: appuser
-      POSTGRES_PASSWORD: apppass
-    ports: ["5432:5432"]
-
-  redis:
-    image: redis:7-alpine
-    ports: ["6379:6379"]
-    command: ["redis-server","--save",""]
-    healthcheck:
-      test: ["CMD","redis-cli","ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
-  app:
-    build: .
-    depends_on:
-      db:
-        condition: service_started
-      redis:
-        condition: service_healthy
-    environment:
-      SPRING_PROFILES_ACTIVE: "pg,redis"
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: appdb
-      DB_USER: appuser
-      DB_PASSWORD: apppass
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    ports: ["8080:8080"]
-```
-
-Запуск:
+## Запуск
 ```bash
-docker-compose -f docker-compose.redis.yml build --no-cache
-docker-compose -f docker-compose.redis.yml up
+docker-compose -f docker-compose.rabbit.yml build --no-cache
+docker-compose -f docker-compose.rabbit.yml up
+# Rabbit UI: http://localhost:15672 (guest/guest)
 ```
 
-## Локальный запуск
+## Проверка
 ```bash
-docker run -p 6379:6379 -d --name step6-redis redis:7-alpine redis-server --save ""
-export SPRING_PROFILES_ACTIVE=pg,redis
-export REDIS_HOST=localhost
-export REDIS_PORT=6379
-mvn spring-boot:run
+# создать пользователя
+curl -X POST http://localhost:8080/users -H "Content-Type: application/json" -d '{"username":"alice","displayName":"Alice"}'
+# создать задачу (опубликуется событие)
+curl -X POST http://localhost:8080/tasks -H "Content-Type: application/json" -d '{"userId":1,"title":"Buy milk"}'
+# проверить уведомления (созданы listener'ом)
+curl "http://localhost:8080/notifications?userId=1"
 ```
 
-## Сохранение прошлых шагов
-- `inmemory`, `h2`, `pg` остаются без изменений.
-- Кэш включается отдельным профилем `redis`, который можно комбинировать с `pg` или `h2`.
+## Профили
+- БД: `pg` (или `h2`), кэш: `redis` (опционально), брокер: `amqp`.
+- Все старые реализации остаются, новый функционал включается добавлением профиля `amqp`.
+
