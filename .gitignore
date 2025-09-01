@@ -1,0 +1,16 @@
+HELP.md
+.classpath
+.vscode
+.project
+.settings/
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+/target/
+*.iml
+.idea/
+*.log
+*.class
+.gradle
+*.jar
