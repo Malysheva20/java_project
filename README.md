@@ -1,37 +1,34 @@
-# Step 7: Messaging with RabbitMQ (profile `amqp`)
+# Step 8: Scheduling & Async (profile `sched`)
 
-## Цель
-- Поднять брокер сообщений **RabbitMQ**.
-- Публиковать событие при **создании задачи**.
-- **Notification service** получает обновления **ТОЛЬКО** из брокера и сохраняет уведомления.
-- Обработчик слушает очередь и асинхронно обрабатывает сообщения.
+## Идея
+Периодически находим просроченные задачи и обрабатываем их в фоне.
 
 ## Что добавлено
-- Зависимости: `spring-boot-starter-amqp`, `spring-boot-starter-aop` (аспект публикации).
-- Профиль `amqp`: `application-amqp.properties`.
-- `RabbitConfig` (`exchange`, `queue`, `binding`, `RabbitTemplate` c JSON-конвертером).
-- `TaskCreatePublishAspect`: перехватывает `TaskServiceApi.create(..)` и публикует `TaskCreatedEvent`.
-- `NotificationEventListener`: `@RabbitListener` обрабатывает событие и сохраняет `NotificationEntity`.
-- `docker-compose.rabbit.yml`: `db` + `rabbit` + `app` (профили `pg,amqp`).
+- `SchedulingConfig` с `@EnableScheduling` и `@EnableAsync` (только для профиля `sched`).
+- `OverdueTaskScheduler`:
+  - каждые `app.scheduling.overdue.fixedDelay` мс (по умолчанию 60 сек) обходит пользователей,
+  - берёт pending-задачи через `TaskServiceApi`,
+  - фильтрует просроченные (targetDate < now, не deleted),
+  - **если активен `amqp`** — публикует `TaskOverdueEvent` в exchange `task.events` с routing key `task.overdue`,
+  - **иначе** — записывает уведомление напрямую в БД (фолбэк).
+- `TaskOverdueEvent` — DTO события.
+- `application-sched.properties` — настройки профиля `sched`.
+- `docker-compose.sched.yml` — пример запуска `pg + app` (без брокера).
 
-## Запуск
+## Запуск (без брокера)
 ```bash
-docker-compose -f docker-compose.rabbit.yml build --no-cache
+docker-compose -f docker-compose.sched.yml build --no-cache
+docker-compose -f docker-compose.sched.yml up
+```
+В этом режиме уведомления о просрочках пишутся напрямую в БД.
+
+## Запуск (с брокером)
+Активируй `amqp` вместе с `sched` (см. Step 7 docker-compose):
+```bash
+SPRING_PROFILES_ACTIVE=pg,sched,amqp docker-compose -f docker-compose.rabbit.yml build --no-cache
 docker-compose -f docker-compose.rabbit.yml up
-# Rabbit UI: http://localhost:15672 (guest/guest)
 ```
+Теперь просрочки публикуются как сообщения `task.overdue`.
 
-## Проверка
-```bash
-# создать пользователя
-curl -X POST http://localhost:8080/users -H "Content-Type: application/json" -d '{"username":"alice","displayName":"Alice"}'
-# создать задачу (опубликуется событие)
-curl -X POST http://localhost:8080/tasks -H "Content-Type: application/json" -d '{"userId":1,"title":"Buy milk"}'
-# проверить уведомления (созданы listener'ом)
-curl "http://localhost:8080/notifications?userId=1"
-```
-
-## Профили
-- БД: `pg` (или `h2`), кэш: `redis` (опционально), брокер: `amqp`.
-- Все старые реализации остаются, новый функционал включается добавлением профиля `amqp`.
-
+## Настройки
+`app.scheduling.overdue.fixedDelay=60000` (мс) — можно переопределять через `-Dapp.scheduling.overdue.fixedDelay=15000`.
