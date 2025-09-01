@@ -1,15 +1,15 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.User;
-import com.example.demo.service.UserService;
+import com.example.demo.service.api.UserServiceApi;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final UserService service;
-    public UserController(UserService service) { this.service = service; }
+    private final UserServiceApi service;
+    public UserController(UserServiceApi service) { this.service = service; }
 
     @PostMapping
     public ResponseEntity<User> register(@RequestBody User u) {

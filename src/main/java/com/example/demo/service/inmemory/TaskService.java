@@ -1,14 +1,17 @@
-package com.example.demo.service;
+package com.example.demo.service.inmemory;
 
 import com.example.demo.model.Task;
 import com.example.demo.repository.TaskRepository;
+import com.example.demo.service.api.TaskServiceApi;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class TaskService {
+@Profile("inmemory")
+public class TaskService implements TaskServiceApi {
     private final TaskRepository repo;
     public TaskService(TaskRepository repo) { this.repo = repo; }
 

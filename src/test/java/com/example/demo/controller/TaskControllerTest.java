@@ -1,15 +1,13 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Task;
-import com.example.demo.service.TaskService;
 import com.example.demo.repository.TaskRepository;
+import com.example.demo.service.inmemory.TaskService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;

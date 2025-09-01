@@ -1,8 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Notification;
 import com.example.demo.repository.NotificationRepository;
-import com.example.demo.service.NotificationService;
+import com.example.demo.service.inmemory.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,7 +16,7 @@ class NotificationControllerTest {
 
     @BeforeEach
     void setup() {
-        NotificationService service = new NotificationService(new NotificationRepository());
+        var service = new NotificationService(new NotificationRepository());
         mockMvc = MockMvcBuilders.standaloneSetup(new NotificationController(service)).build();
     }
 
