@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import com.example.demo.model.Task;
 import com.example.demo.repository.TaskRepository;
+import com.example.demo.service.api.TaskServiceApi;
+import com.example.demo.service.inmemory.TaskService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TaskServiceTest {
 
-    private TaskService service;
+    private TaskServiceApi service;
 
     @BeforeEach
     void setup() {

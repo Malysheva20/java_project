@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.service.UserService;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.service.inmemory.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -16,7 +17,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setup() {
-        UserService service = new UserService(new com.example.demo.repository.UserRepository());
+        var service = new UserService(new UserRepository());
         mockMvc = MockMvcBuilders.standaloneSetup(new UserController(service)).build();
     }
 

@@ -1,13 +1,16 @@
-package com.example.demo.service;
+package com.example.demo.service.inmemory;
 
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.service.api.UserServiceApi;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
-public class UserService {
+@Profile("inmemory")
+public class UserService implements UserServiceApi {
     private final UserRepository repo;
     public UserService(UserRepository repo) { this.repo = repo; }
 

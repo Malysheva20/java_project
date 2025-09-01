@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.service.api.UserServiceApi;
+import com.example.demo.service.inmemory.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserServiceTest {
 
-    private UserService service;
+    private UserServiceApi service;
 
     @BeforeEach
     void setup() {

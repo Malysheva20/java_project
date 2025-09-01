@@ -1,42 +1,29 @@
-# Step 2: Unit Tests for Step 1
+# Step 3: In-Memory Database (H2)
 
 ## Описание
-В этом шаге добавлены unit-тесты для Step 1 с использованием JUnit 5 и Mockito.  
-Покрываются сервисы и контроллеры для задач, пользователей и уведомлений.  
+В этом шаге мы добавляем поддержку **H2 in-memory базы данных** с использованием Spring Data JPA.  
+Старые реализации на `HashMap` остаются, но теперь мы можем переключаться между ними и H2 через профили Spring Boot.
 
-## Стек технологий
-- Java 17
-- Spring Boot 3
-- Maven
-- JUnit 5
-- Mockito (для mock объектов)
-- MockMvc (для тестирования контроллеров)
+---
 
-## Проверяемые сценарии
+## Основные изменения
+- Добавлены JPA **сущности**: `TaskEntity`, `UserEntity`, `NotificationEntity`.
+- Созданы **Spring Data JPA репозитории** для каждой сущности.
+- Добавлены сервисы с профилем `h2`, которые используют JPA репозитории.
+- Сервисы теперь реализуют интерфейсы, чтобы контроллеры не менялись.
+- В `pom.xml` добавлены зависимости `spring-boot-starter-data-jpa` и `h2`.
+- Добавлен `application-h2.properties` для конфигурации H2.
+- Сохранили старые сервисы/репозитории с профилем `inmemory`.
 
-### TaskServiceTest
-- Создание и получение задачи
-- Получение pending задач
-- Soft delete
+---
 
-### UserServiceTest
-- Регистрация пользователя
-- Логин
-- Логин несуществующего пользователя
-
-### NotificationServiceTest
-- Создание уведомления
-- Получение всех и pending уведомлений
-- Пометка уведомления как прочитанного
-
-### Контроллеры
-- `TaskControllerTest` – проверка POST, GET, DELETE для задач
-- `UserControllerTest` – проверка регистрации и логина через MockMvc
-- `NotificationControllerTest` – проверка GET и GET pending через MockMvc
-
-## Запуск тестов
-
-1. Установить Java 17 и Maven.
-2. Выполнить команду:
-```bash
-mvn test
+## Профили
+- **inmemory** (по умолчанию)  
+  Использует коллекции (`Map`, `List`) для хранения данных.  
+  Активируется автоматически.
+  
+- **h2**  
+  Использует Spring Data JPA + H2 in-memory базу.  
+  Активируется так:
+  ```bash
+  mvn spring-boot:run -Dspring-boot.run.profiles=h2

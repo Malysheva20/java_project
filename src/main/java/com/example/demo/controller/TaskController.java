@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Task;
-import com.example.demo.service.TaskService;
+import com.example.demo.service.api.TaskServiceApi;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,8 +10,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
-    private final TaskService service;
-    public TaskController(TaskService service) { this.service = service; }
+    private final TaskServiceApi service;
+    public TaskController(TaskServiceApi service) { this.service = service; }
 
     @GetMapping
     public ResponseEntity<List<Task>> all(@RequestParam Long userId) {

@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import com.example.demo.model.Notification;
 import com.example.demo.repository.NotificationRepository;
+import com.example.demo.service.api.NotificationServiceApi;
+import com.example.demo.service.inmemory.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class NotificationServiceTest {
 
-    private NotificationService service;
+    private NotificationServiceApi service;
 
     @BeforeEach
     void setup() {
