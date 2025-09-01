@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: step4-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: "h2"
+      # JAVA_OPTS: "-Xms256m -Xmx512m"
+    restart: unless-stopped
