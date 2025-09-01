@@ -17,10 +17,10 @@ WORKDIR /app
 COPY --from=builder /app/target/*.jar /app/app.jar
 
 # Environment: use H2 profile in Step 4
-ENV SPRING_PROFILES_ACTIVE=h2
+ENV SPRING_PROFILES_ACTIVE=pg
 EXPOSE 8080
 
 # Optional JVM flags can be overridden at run time
 ENV JAVA_OPTS=""
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
+ENTRYPOINT ["sh","-c","java -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-pg} $JAVA_OPTS -jar /app/app.jar"]
