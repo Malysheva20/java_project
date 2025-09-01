@@ -1,38 +1,42 @@
-# Step 1: Basic REST API with In-Memory Storage
+# Step 2: Unit Tests for Step 1
 
 ## Описание
-В этом шаге реализован простой REST API на Spring Boot с in-memory хранилищем для задач, пользователей и уведомлений.  
-Данные хранятся в `List`/`Map`, база данных пока не используется.  
+В этом шаге добавлены unit-тесты для Step 1 с использованием JUnit 5 и Mockito.  
+Покрываются сервисы и контроллеры для задач, пользователей и уведомлений.  
 
 ## Стек технологий
 - Java 17
 - Spring Boot 3
 - Maven
-- REST API
-- In-memory репозитории (HashMap, ConcurrentHashMap)
+- JUnit 5
+- Mockito (для mock объектов)
+- MockMvc (для тестирования контроллеров)
 
-## REST API Endpoints
+## Проверяемые сценарии
 
-### Users
-- `POST /users` – регистрация пользователя  
-  **Body:** `{"username":"alice","displayName":"Alice"}`
-- `GET /users/login?username=alice` – "логин" (получение пользователя)
+### TaskServiceTest
+- Создание и получение задачи
+- Получение pending задач
+- Soft delete
 
-### Tasks
-- `POST /tasks` – создать задачу  
-  **Body:** `{"userId":1,"title":"Task1","dueDate":"2025-09-05T12:00:00"}`
-- `GET /tasks?userId=1` – все задачи пользователя
-- `GET /tasks/pending?userId=1` – только pending задачи
-- `DELETE /tasks/{id}` – soft delete (не удаляет из базы, помечает как deleted)
+### UserServiceTest
+- Регистрация пользователя
+- Логин
+- Логин несуществующего пользователя
 
-### Notifications
-- `GET /notifications?userId=1` – все уведомления пользователя
-- `GET /notifications/pending?userId=1` – только непрочитанные уведомления
+### NotificationServiceTest
+- Создание уведомления
+- Получение всех и pending уведомлений
+- Пометка уведомления как прочитанного
 
-## Запуск проекта
+### Контроллеры
+- `TaskControllerTest` – проверка POST, GET, DELETE для задач
+- `UserControllerTest` – проверка регистрации и логина через MockMvc
+- `NotificationControllerTest` – проверка GET и GET pending через MockMvc
+
+## Запуск тестов
 
 1. Установить Java 17 и Maven.
-2. Собрать и запустить:
+2. Выполнить команду:
 ```bash
-./mvnw spring-boot:run
-3. Приложение будет доступно на http://localhost:8080.
+mvn test
